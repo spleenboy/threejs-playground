@@ -1,0 +1,118 @@
+<html>
+	<head>
+		<title>My first Three.js app</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+		<script src="js/three.min.js"></script>
+		<script>
+			var particles = 20000;
+			var mouseX = 0, mouseY = 0, mouseDown = false;
+			var cloud;
+
+			var scene, camera, frustum, screenMatrix, renderer,
+				directionalLight, pointLight;
+
+			function init() {
+				scene = new THREE.Scene();
+				lights();
+				camera();
+				action();
+			}
+
+			function lights() {
+				// Lighting
+				var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+				directionalLight.position.set(0, -1, 1);
+				scene.add(directionalLight);
+
+				var pointLight = new THREE.PointLight(0xffffff, 2, 300);
+				pointLight.position.set(0, 0, 0);
+				scene.add(pointLight);
+			}
+
+			function camera() {
+				camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 1000);
+				camera.position.z = 500;
+
+				frustum      = new THREE.Frustum();
+				screenMatrix = new THREE.Matrix4();
+			}
+
+			function action() {
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize(window.innerWidth, window.innerHeight);
+				document.body.appendChild(renderer.domElement);
+				makeCloud();
+				loop();
+			}
+
+			function loop() {
+				requestAnimationFrame(loop);
+				updateCloud();
+				renderer.render(scene, camera);
+			}
+
+			function makeCloud() {
+				var geometry = new THREE.Geometry();
+				var material = new THREE.PointCloudMaterial({
+					color: 0xffffff
+				});
+				var rand     = THREE.Math.randInt.bind(THREE.Math);
+				var w = window.innerWidth;
+				var h = window.innerHeight;
+				for (var i=0; i<particles; i++) {
+					var x = rand(-w/2, w/2), y = rand(-h/2, h/2), z = rand(1, 1000);
+					geometry.vertices.push(new THREE.Vector3(x, y, z));
+				}
+				cloud = new THREE.PointCloud(geometry, material);
+				scene.add(cloud);
+			}
+
+			function updateCloud() {
+				var w = window.innerWidth;
+				var h = window.innerHeight;
+				var x = mouseX - w/2;
+				var y = mouseY - h/2;
+				if (mouseDown) {
+					cloud.rotation.y += x * 0.00001;
+					cloud.rotation.x += y * 0.00001;
+				}
+
+				var change = new THREE.Vector3(x * -0.001, y * -0.001, 0.01);
+
+				cloud.geometry.vertices.forEach(function(v, i) {
+					v.add(change);
+					if (v.z > 1000) {
+						v.z = 0;
+					}
+				});
+
+				cloud.geometry.verticesNeedUpdate = true;
+			}
+
+			function randColor() {
+				var num = THREE.Math.randFloat.bind(THREE.Math, 0.0, 1.0);
+				return new THREE.Color(num(), num(), num());
+			}
+
+			document.body.onmousemove = function(e) {
+				mouseX = e.clientX;
+				mouseY = e.clientY;
+			}
+
+			document.body.onmousedown = function(e) {
+				mouseDown = true;
+			}
+
+			document.body.onmouseup = function(e) {
+				mouseDown = false;
+			}
+
+			init();
+		</script>
+	</body>
+</html>
