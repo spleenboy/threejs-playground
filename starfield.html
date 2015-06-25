@@ -10,7 +10,8 @@
 		<script src="js/three.min.js"></script>
 		<script>
 			var particles = 20000;
-			var velocity  = {max: 1, min: 0.1};
+			var velocity  = {max: 0.001, min: 0.000001};
+			var depth     = 1000;
 
 			var mouseX = 0, mouseY = 0, mouseDown = false;
 			var cloud;
@@ -37,8 +38,8 @@
 			}
 
 			function camera() {
-				camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, 1000);
-				camera.position.z = 500;
+				camera = new THREE.PerspectiveCamera(90, window.innerWidth / window.innerHeight, 1, depth);
+				camera.position.z = depth/2;
 
 				frustum      = new THREE.Frustum();
 				screenMatrix = new THREE.Matrix4();
@@ -58,17 +59,23 @@
 				renderer.render(scene, camera);
 			}
 
+			function randVector() {
+				var w = window.innerWidth;
+				var h = window.innerHeight;
+				var rand = THREE.Math.randInt.bind(THREE.Math);
+				var x = rand(-w/2, w/2), 
+					y = rand(-h/2, h/2), 
+					z = rand(1, depth);
+				return new THREE.Vector3(x, y, z);
+			}
+
 			function makeCloud() {
 				var geometry = new THREE.Geometry();
 				var material = new THREE.PointCloudMaterial({
 					color: 0xffffff
 				});
-				var rand     = THREE.Math.randInt.bind(THREE.Math);
-				var w = window.innerWidth;
-				var h = window.innerHeight;
 				for (var i=0; i<particles; i++) {
-					var x = rand(-w/2, w/2), y = rand(-h/2, h/2), z = rand(1, 1000);
-					var v = new THREE.Vector3(x, y, z);
+					var v = randVector();
 					v.velocity = THREE.Math.randFloat(velocity.min, velocity.max);
 					geometry.vertices.push(v);
 				}
@@ -86,13 +93,15 @@
 					cloud.rotation.x += y * -0.00001;
 				}
 
-				var change = new THREE.Vector3(x * 0.001, y * 0.001, 1);
+				var target = new THREE.Vector3(x, y, depth);
 
 				cloud.geometry.vertices.forEach(function(v, i) {
-					change.z = v.velocity;
-					v.add(change);
-					if (v.z > 1100) {
-						v.z = 0;
+					v.lerp(target, v.velocity);
+					if (v.z > depth/2 || v.z < 0) {
+						var rand = randVector();
+						v.x = rand.x;
+						v.y = rand.y;
+						v.z = 1;
 					}
 				});
 
