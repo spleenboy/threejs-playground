@@ -10,6 +10,8 @@
 		<script src="js/three.min.js"></script>
 		<script>
 			var particles = 20000;
+			var velocity  = {max: 1, min: 0.1};
+
 			var mouseX = 0, mouseY = 0, mouseDown = false;
 			var cloud;
 
@@ -66,7 +68,9 @@
 				var h = window.innerHeight;
 				for (var i=0; i<particles; i++) {
 					var x = rand(-w/2, w/2), y = rand(-h/2, h/2), z = rand(1, 1000);
-					geometry.vertices.push(new THREE.Vector3(x, y, z));
+					var v = new THREE.Vector3(x, y, z);
+					v.velocity = THREE.Math.randFloat(velocity.min, velocity.max);
+					geometry.vertices.push(v);
 				}
 				cloud = new THREE.PointCloud(geometry, material);
 				scene.add(cloud);
@@ -76,17 +80,18 @@
 				var w = window.innerWidth;
 				var h = window.innerHeight;
 				var x = mouseX - w/2;
-				var y = mouseY - h/2;
+				var y = h/2 - mouseY;
 				if (mouseDown) {
 					cloud.rotation.y += x * 0.00001;
-					cloud.rotation.x += y * 0.00001;
+					cloud.rotation.x += y * -0.00001;
 				}
 
-				var change = new THREE.Vector3(x * -0.001, y * -0.001, 0.01);
+				var change = new THREE.Vector3(x * 0.001, y * 0.001, 1);
 
 				cloud.geometry.vertices.forEach(function(v, i) {
+					change.z = v.velocity;
 					v.add(change);
-					if (v.z > 1000) {
+					if (v.z > 1100) {
 						v.z = 0;
 					}
 				});
