@@ -1,0 +1,26 @@
+{
+  "name": "three.js playground",
+  "version": "0.0.0",
+  "homepage": "https://github.com/spleenboy/threejs-playground",
+  "authors": [
+    "Barrett Alexander <barrett@clockwork.net>"
+  ],
+  "main": "index.html",
+  "keywords": [
+    "three.js",
+    "3d",
+    "2d",
+    "playground"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "tween.js": "tweenjs/tween.js"
+  }
+}

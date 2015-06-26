@@ -22,6 +22,7 @@
 		</div>
 
 		<script src="js/three.min.js"></script>
+		<script src="js/tween.js"></script>
 		<script src="js/keyboard-controller.js"></script>
 		<script>
 			var world = {
@@ -71,61 +72,80 @@
 			function setup() {
 				var geometry = new THREE.BoxGeometry(1, 1, 1);
 				var material = new THREE.MeshLambertMaterial({color: 0x00cc00});
-				cube = new THREE.Mesh(geometry, material);
-				cube.position.z = world.far * 0.9;
+				var mesh     = new THREE.Mesh(geometry, material);
+				mesh.position.z = world.far * 0.95;
 
-				scene.add(cube);
+				cube = new MovableMesh(mesh);
+
+				scene.add(mesh);
 			}
 
-			function draw() {
-				stats.x.innerHTML = cube.position.x;
-				stats.y.innerHTML = cube.position.y;
-				stats.z.innerHTML = cube.position.z;
+			function MovableMeshTransform(attribute, property, delta) {
+				this.attribute = attribute;
+				this.property  = property;
+				this.delta     = delta;
+				this.tween     = false;
+				this.stopped   = false;
+			}
 
-				var rotationRate = 0.1;
-				var positionRate = 0.25;
+			MovableMeshTransform.prototype.apply = function(mesh) {
+				if (!this.attribute || !this.property || !this.delta || this.stopped) {
+					return false;
+				}
 
-				Key.forEachDown(function(keyCode) {
-					switch (keyCode) {
-						case Key.W:
-							cube.rotation.z += rotationRate;
-							break;
-						case Key.S:
-							cube.rotation.z -= rotationRate;
-							break;
-						case Key.A:
-							cube.rotation.x -= rotationRate;
-							break;
-						case Key.D:
-							cube.rotation.x += rotationRate;
-							break;
-						case Key.Z:
-							cube.rotation.y -= rotationRate;
-							break;
-						case Key.X:
-							cube.rotation.y += rotationRate;
-							break;
-						case Key.UP_ARROW:
-							cube.position.y += positionRate;
-							break;
-						case Key.DOWN_ARROW:
-							cube.position.y -= positionRate;
-							break;
-						case Key.LEFT_ARROW:
-							cube.position.x -= positionRate;
-							break;
-						case Key.RIGHT_ARROW:
-							cube.position.x += positionRate;
-							break;
-						case Key.SPACEBAR:
-						case Key.EQUAL_SIGN:
-							cube.position.z += positionRate;
-							break;
-						case Key.SHIFT:
-							cube.position.z -= positionRate;
-							break;
+				mesh[this.attribute][this.property] += this.delta;
+
+				return mesh[this.attribute][this.property];
+			};
+
+			MovableMeshTransform.prototype.stop = function() {
+				this.delta = 0;
+				this.stopped = true;
+			};
+
+			MovableMeshTransform.prototype.brake = function(delay) {
+				var self = this;
+				this.tween = new TWEEN.Tween(this);
+				this.tween
+					.to({delta: 0}, delay)
+					.easing(TWEEN.Easing.Elastic.Out)
+					.onUpdate(function() {
+						self.delta = this.delta;
+					})
+					.onStop(function() {
+						self.delta = 0;
+						self.stopped = true;
+					});
+				this.tween.start();
+			};
+
+			function MovableMesh(mesh) {
+				this.mesh       = mesh;
+				this.transforms = {};
+			}
+
+			MovableMesh.prototype.transform = function(key, attribute, property, delta) {
+				this.transforms[key] = new MovableMeshTransform(attribute, property, delta);
+			};
+
+			MovableMesh.prototype.apply = function() {
+				for (var key in this.transforms) {
+					if (this.transforms[key].stopped) {
+						delete(this.transforms[key]);
 					}
-				});
+					else {
+						this.transforms[key].apply(this.mesh);
+					}
+				}
+			};
+
+
+			function draw() {
+				stats.x.innerHTML = cube.mesh.position.x;
+				stats.y.innerHTML = cube.mesh.position.y;
+				stats.z.innerHTML = cube.mesh.position.z;
+				cube.apply();
+				TWEEN.update();
 			}
 
 			function loop() {
@@ -133,6 +153,38 @@
 				draw();
 				renderer.render(scene, camera);
 			}
+
+			var rotationRate = 0.1;
+			var positionRate = 0.25;
+			var triggers = {}
+			triggers[Key.W] = ['rotation', 'x', rotationRate];
+			triggers[Key.S] = ['rotation', 'x', -rotationRate];
+			triggers[Key.A] = ['rotation', 'z', -rotationRate];
+			triggers[Key.D] = ['rotation', 'z', rotationRate];
+			triggers[Key.Z] = ['rotation', 'y', -rotationRate];
+			triggers[Key.X] = ['rotation', 'y', rotationRate];
+			triggers[Key.UP_ARROW] = ['position', 'y', positionRate];
+			triggers[Key.DOWN_ARROW] = ['position', 'y', -positionRate];
+			triggers[Key.LEFT_ARROW] = ['position', 'x', -positionRate];
+			triggers[Key.RIGHT_ARROW] = ['position', 'x', positionRate];
+			triggers[Key.SPACEBAR] = ['position', 'z', positionRate];
+			triggers[Key.EQUAL_SIGN] = ['position', 'z', positionRate];
+			triggers[Key.SHIFT] = ['position', 'z', -positionRate];
+
+			Key.on('press', function(event) {
+				var trigger = triggers[event.keyCode];
+				if (!trigger) {
+					return;
+				}
+				cube.transform(event.keyCode, trigger[0], trigger[1], trigger[2]);
+			});
+
+			Key.on('up', function(event) {
+				if (cube.transforms[event.keyCode]) {
+					cube.transforms[event.keyCode].brake(500);
+				}
+			});
+
 			init();
 		</script>
 	</body>
