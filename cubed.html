@@ -1,0 +1,139 @@
+<html>
+	<head>
+		<title>Cubed - three.js Experiment</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+			#stats {
+				position: absolute;
+				left: 10px;
+				bottom: 200px;
+				background: white;
+				border: red;
+				padding: 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="stats">
+			(<label id="x">0</label>,
+			<label id="y">0</label>,
+			<label id="z">0</label>)
+		</div>
+
+		<script src="js/three.min.js"></script>
+		<script src="js/keyboard-controller.js"></script>
+		<script>
+			var world = {
+				angle   : 30,
+				near    : 1,
+				far     : 1000,
+				width   : window.innerWidth,
+				height  : window.innerHeight
+			}
+
+			var cube, stats = {};
+			var scene, camera, renderer;
+
+			stats.x = document.getElementById('x');
+			stats.y = document.getElementById('y');
+			stats.z = document.getElementById('z');
+
+			function init() {
+				scene = new THREE.Scene();
+				lights();
+				camera();
+				action();
+			}
+
+			function lights() {
+				var toplight = new THREE.HemisphereLight(0xffffff, 0x666666);
+				scene.add(toplight);
+
+				var lightbulb = new THREE.PointLight(0xffffff, 1, world.width/1.5);
+				lightbulb.position.set(world.width/2, world.height/2, world.near);
+				scene.add(lightbulb);
+			}
+
+			function camera() {
+				camera = new THREE.PerspectiveCamera(world.angle, world.width / world.height, world.near, world.far);
+				camera.position.z = world.far;
+			}
+
+			function action() {
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize(world.width, world.height);
+				document.body.appendChild(renderer.domElement);
+				setup();
+				loop();
+			}
+
+			function setup() {
+				var geometry = new THREE.BoxGeometry(1, 1, 1);
+				var material = new THREE.MeshLambertMaterial({color: 0x00cc00});
+				cube = new THREE.Mesh(geometry, material);
+				cube.position.z = world.far * 0.9;
+
+				scene.add(cube);
+			}
+
+			function draw() {
+				stats.x.innerHTML = cube.position.x;
+				stats.y.innerHTML = cube.position.y;
+				stats.z.innerHTML = cube.position.z;
+
+				var rotationRate = 0.1;
+				var positionRate = 0.25;
+
+				Key.forEachDown(function(keyCode) {
+					switch (keyCode) {
+						case Key.W:
+							cube.rotation.z += rotationRate;
+							break;
+						case Key.S:
+							cube.rotation.z -= rotationRate;
+							break;
+						case Key.A:
+							cube.rotation.x -= rotationRate;
+							break;
+						case Key.D:
+							cube.rotation.x += rotationRate;
+							break;
+						case Key.Z:
+							cube.rotation.y -= rotationRate;
+							break;
+						case Key.X:
+							cube.rotation.y += rotationRate;
+							break;
+						case Key.UP_ARROW:
+							cube.position.y += positionRate;
+							break;
+						case Key.DOWN_ARROW:
+							cube.position.y -= positionRate;
+							break;
+						case Key.LEFT_ARROW:
+							cube.position.x -= positionRate;
+							break;
+						case Key.RIGHT_ARROW:
+							cube.position.x += positionRate;
+							break;
+						case Key.SPACEBAR:
+						case Key.EQUAL_SIGN:
+							cube.position.z += positionRate;
+							break;
+						case Key.SHIFT:
+							cube.position.z -= positionRate;
+							break;
+					}
+				});
+			}
+
+			function loop() {
+				requestAnimationFrame(loop);
+				draw();
+				renderer.render(scene, camera);
+			}
+			init();
+		</script>
+	</body>
+</html>

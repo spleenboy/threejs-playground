@@ -1,0 +1,62 @@
+<html>
+	<head>
+		<title>three.js Experiment</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+		<script src="js/three.min.js"></script>
+		<script>
+			var world = {
+				angle  : 90,
+				near   : 1,
+				far    : 1000,
+				width  : window.innerWidth,
+				height : window.innerHeight
+			}
+
+			var scene, camera, renderer;
+
+			function init() {
+				scene = new THREE.Scene();
+				lights();
+				camera();
+				action();
+			}
+
+			function lights() {
+			}
+
+			function camera() {
+				camera = new THREE.PerspectiveCamera(world.angle, world.width / world.height, world.near, world.far);
+				camera.position.z = world./2;
+			}
+
+			function action() {
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize(world.width, world.height);
+				document.body.appendChild(renderer.domElement);
+				setup();
+				loop();
+			}
+
+			function setup() {
+
+			}
+
+			function draw() {
+
+			}
+
+			function loop() {
+				requestAnimationFrame(loop);
+				draw();
+				renderer.render(scene, camera);
+			}
+
+			init();
+		</script>
+	</body>
+</html>
