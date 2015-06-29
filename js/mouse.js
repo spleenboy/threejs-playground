@@ -41,8 +41,10 @@ MouseWatcher.prototype.distance = function(start, end) {
 MouseWatcher.prototype.difference = function(start, end, data) {
 	data = data || {};
 	data.distance = this.distance(start, end);
-	data.duration = end.when - start.when;
-	if (data.duration !== 0) {
+	if (end && end.when && start && start.when) {
+		data.duration = end.when - start.when;
+	}
+	if (data.duration) {
 		data.velocity = data.distance / data.duration;
 	}
 	return data;
@@ -75,10 +77,13 @@ MouseWatcher.prototype.handleMove = function(event) {
 MouseWatcher.prototype.handleDown = function(event) {
 	event = this.normalizeEvent(event);
 	if (this.down[event.which]) {
-		return;
+		return false;
 	}
 	this.down[event.which] = event;
 	this.fire('down', event);
+	if (event.which === 3) {
+		return false;
+	}
 };
 
 MouseWatcher.prototype.handleUp = function(event) {
@@ -102,6 +107,11 @@ MouseWatcher.prototype.start = function() {
 	window.addEventListener('mousedown', this.handleDown.bind(this));
 	window.addEventListener('mouseup',   this.handleUp.bind(this));
 	window.addEventListener('mousemove', this.handleMove.bind(this));
+	document.oncontextmenu = function(e) {
+		if (e.preventDefault) e.preventDefault();
+		if (e.stopPropagation) e.stopPropagation();
+		return false;
+	};
 };
 
 var Mouse = new MouseWatcher();

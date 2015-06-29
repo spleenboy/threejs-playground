@@ -175,14 +175,14 @@
 				cube.apply();
 				TWEEN.update();
 
+				var zcam = 0;
 				if (Mouse.isDown(Mouse.LEFT)) {
-					if (Key.isDown(Key.SHIFT)) {
-						camera.position.z += 1;
-					}
-					else {
-						camera.position.z -= 1;
-					}
+					zcam = Key.isDown(Key.SHIFT) ? 1 : -1;
 				}
+				if (Mouse.isDown(Mouse.RIGHT)) {
+					zcam = Key.isDown(Key.SHIFT) ? -1 : 1;
+				}
+				camera.position.z += zcam;
 			}
 
 			function loop() {
