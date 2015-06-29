@@ -23,7 +23,7 @@
 
 		<script src="js/three.min.js"></script>
 		<script src="js/tween.js"></script>
-		<script src="js/keyboard-controller.js"></script>
+		<script src="js/key.js"></script>
 		<script>
 			var world = {
 				angle   : 30,
@@ -157,19 +157,20 @@
 			var rotationRate = 0.1;
 			var positionRate = 0.25;
 			var triggers = {}
-			triggers[Key.W] = ['rotation', 'x', rotationRate];
-			triggers[Key.S] = ['rotation', 'x', -rotationRate];
-			triggers[Key.A] = ['rotation', 'z', -rotationRate];
-			triggers[Key.D] = ['rotation', 'z', rotationRate];
-			triggers[Key.Z] = ['rotation', 'y', -rotationRate];
-			triggers[Key.X] = ['rotation', 'y', rotationRate];
-			triggers[Key.UP_ARROW] = ['position', 'y', positionRate];
-			triggers[Key.DOWN_ARROW] = ['position', 'y', -positionRate];
-			triggers[Key.LEFT_ARROW] = ['position', 'x', -positionRate];
-			triggers[Key.RIGHT_ARROW] = ['position', 'x', positionRate];
+			triggers[Key.W] = ['position', 'y', positionRate];
+			triggers[Key.S] = ['position', 'y', -positionRate];
+			triggers[Key.A] = ['position', 'x', -positionRate];
+			triggers[Key.D] = ['position', 'x', positionRate];
+			triggers[Key.Z] = ['position', 'z', -positionRate];
+			triggers[Key.X] = ['position', 'z', positionRate];
+			triggers[Key.UP_ARROW]    = ['rotation', 'x', -rotationRate];
+			triggers[Key.DOWN_ARROW]  = ['rotation', 'x', rotationRate];
+			triggers[Key.LEFT_ARROW]  = ['rotation', 'y', -rotationRate];
+			triggers[Key.RIGHT_ARROW] = ['rotation', 'y', rotationRate];
+
 			triggers[Key.SPACEBAR] = ['position', 'z', positionRate];
-			triggers[Key.EQUAL_SIGN] = ['position', 'z', positionRate];
-			triggers[Key.SHIFT] = ['position', 'z', -positionRate];
+			triggers[Key.F]        = ['position', 'z', positionRate];
+			triggers[Key.B]        = ['position', 'z', -positionRate];
 
 			Key.on('press', function(event) {
 				var trigger = triggers[event.keyCode];
@@ -181,7 +182,7 @@
 
 			Key.on('up', function(event) {
 				if (cube.transforms[event.keyCode]) {
-					cube.transforms[event.keyCode].brake(500);
+					cube.transforms[event.keyCode].brake(2000);
 				}
 			});
 
