@@ -24,16 +24,22 @@
 		<script src="js/three.min.js"></script>
 		<script src="js/tween.js"></script>
 		<script src="js/key.js"></script>
+		<script src="js/mouse.js"></script>
 		<script>
 			var world = {
-				angle   : 30,
-				near    : 1,
-				far     : 1000,
-				width   : window.innerWidth,
-				height  : window.innerHeight
+				angle      : 30,
+				near       : 1,
+				far        : 1000,
+				width      : window.innerWidth,
+				height     : window.innerHeight,
+				halfwidth  : window.innerWidth/2,
+				halfheight : window.innerHeight/2,
+				gridX      : 10,
+				gridY      : 10,
+				gridZ      : 100
 			}
 
-			var cube, stats = {};
+			var cube, field, stats = {};
 			var scene, camera, renderer;
 
 			stats.x = document.getElementById('x');
@@ -78,6 +84,28 @@
 				cube = new MovableMesh(mesh);
 
 				scene.add(mesh);
+
+				makeGrid();
+			}
+
+			function makeGrid() {
+				var geometry = new THREE.Geometry();
+				var material = new THREE.PointCloudMaterial({color: 0xffffff});
+				var x, y, z, point;
+
+				for (z=world.near; z<world.far; z+=world.gridZ) {
+					for (x=0; x<world.width; x+=world.gridX) {
+						for (y=0; y<world.height; y+=world.gridY) {
+							point = new THREE.Vector3(world.halfwidth - x, world.halfheight - y, z);
+							geometry.vertices.push(point);
+						}
+					}
+				}
+
+				console.info(geometry);
+
+				grid = new THREE.PointCloud(geometry, material);
+				scene.add(grid);
 			}
 
 			function MovableMeshTransform(attribute, property, delta) {
@@ -146,6 +174,15 @@
 				stats.z.innerHTML = cube.mesh.position.z;
 				cube.apply();
 				TWEEN.update();
+
+				if (Mouse.isDown(Mouse.LEFT)) {
+					if (Key.isDown(Key.SHIFT)) {
+						camera.position.z += 1;
+					}
+					else {
+						camera.position.z -= 1;
+					}
+				}
 			}
 
 			function loop() {
@@ -184,6 +221,17 @@
 				if (cube.transforms[event.keyCode]) {
 					cube.transforms[event.keyCode].brake(2000);
 				}
+			});
+
+			Mouse.on('move', function(data) {
+				if (!data.then) {
+					return;
+				}
+				var dx = data.now.x - data.then.x;
+				var dy = data.now.y - data.then.y;
+
+				camera.position.x += dx * 0.01;
+				camera.position.y -= dy * 0.01;
 			});
 
 			init();
