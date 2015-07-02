@@ -6,7 +6,9 @@ function MouseWatcher() {
 		'down'       : [],
 		'up'         : [],
 		'click'      : [],
-		'drag'       : []
+		'drag'       : [],
+		'dragging'   : [],
+		'scroll'     : []
 	};
 	this.dragThreshold = 20; // The distance needed to trigger a drag event
 	this.start();
@@ -52,9 +54,14 @@ MouseWatcher.prototype.difference = function(start, end, data) {
 
 MouseWatcher.prototype.normalizeEvent = function(event) {
 	event.which = event.which || event.button;
+
 	event.x = event.clientX;
 	event.y = event.clientY;
+
 	event.when = new Date();
+
+	event.scrollX = event.wheelDeltaX;
+	event.scrollY = event.wheelDetlaY;
 
 	return event;
 };
@@ -71,7 +78,11 @@ MouseWatcher.prototype.handleMove = function(event) {
 	if (data.then) {
 		this.difference(data.now, data.then, data);
 	}
+
 	this.fire('move', data);
+	if (this.isDown()) {
+		this.fire('dragging', data);
+	}
 };
 
 MouseWatcher.prototype.handleDown = function(event) {
@@ -103,10 +114,16 @@ MouseWatcher.prototype.handleUp = function(event) {
 	delete this.down[event.which];
 };
 
+MouseWatcher.prototype.handleScroll = function(event) {
+	event = this.normalizeEvent(event);
+	this.fire('scroll', event);
+};
+
 MouseWatcher.prototype.start = function() {
-	window.addEventListener('mousedown', this.handleDown.bind(this));
-	window.addEventListener('mouseup',   this.handleUp.bind(this));
-	window.addEventListener('mousemove', this.handleMove.bind(this));
+	window.addEventListener('mousedown',  this.handleDown.bind(this));
+	window.addEventListener('mouseup',    this.handleUp.bind(this));
+	window.addEventListener('mousemove',  this.handleMove.bind(this));
+	window.addEventListener('mousewheel', this.handleScroll.bind(this));
 	document.oncontextmenu = function(e) {
 		if (e.preventDefault) e.preventDefault();
 		if (e.stopPropagation) e.stopPropagation();

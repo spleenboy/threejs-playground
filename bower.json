@@ -22,5 +22,8 @@
   ],
   "dependencies": {
     "tween.js": "tweenjs/tween.js"
+  },
+  "devDependencies": {
+    "three.js": "~0.71.0"
   }
 }

@@ -57,7 +57,7 @@
 				var toplight = new THREE.HemisphereLight(0xffffff, 0x666666);
 				scene.add(toplight);
 
-				var lightbulb = new THREE.PointLight(0xffffff, 1, world.width/1.5);
+				var lightbulb = new THREE.PointLight(0xffffff, 1, world.far);
 				lightbulb.position.set(world.width/2, world.height/2, world.near);
 				scene.add(lightbulb);
 			}
@@ -76,7 +76,9 @@
 			}
 
 			function setup() {
-				var geometry = new THREE.BoxGeometry(1, 1, 1);
+//				var geometry = new THREE.BoxGeometry(1, 1, 1);
+//				var geometry = new THREE.DodecahedronGeometry(1, 0);
+				var geometry = new THREE.TorusKnotGeometry(1, 0.4, 100, 8);
 				var material = new THREE.MeshLambertMaterial({color: 0x00cc00});
 				var mesh     = new THREE.Mesh(geometry, material);
 				mesh.position.z = world.far * 0.95;
@@ -101,8 +103,6 @@
 						}
 					}
 				}
-
-				console.info(geometry);
 
 				grid = new THREE.PointCloud(geometry, material);
 				scene.add(grid);
@@ -232,6 +232,10 @@
 
 				camera.position.x += dx * 0.01;
 				camera.position.y -= dy * 0.01;
+			});
+
+			Mouse.on('scroll', function(data) {
+				camera.position.z += data.scrollX;
 			});
 
 			init();

@@ -1,0 +1,123 @@
+<html>
+	<head>
+		<title>Tick Tack Cube - three.js Experiment</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+		<script src="js/three.min.js"></script>
+		<script src="js/controls/OrbitControls.js"></script>
+		<script src="js/key.js"></script>
+		<script>
+			function Block(materialSettings) {
+				var geometry = new THREE.BoxGeometry(1, 1, 1);
+				var material = new THREE.MeshLambertMaterial(materialSettings);
+				THREE.Mesh.call(this, geometry, material);
+			};
+
+			Block.prototype = THREE.Mesh.prototype;
+
+			Block.prototype.turnX = function() {
+
+			};
+
+			Block.prototype.turnO = function() {
+
+			};
+
+			Block.prototype.clear = function() {
+
+			};
+
+
+			function Cube() {
+				this.blocks = [];
+			}
+
+			Cube.prototype.generate = function(scene) {
+				var count = 27;
+				for (var i=0; i<count; i++) {
+					var shade = i % 2 ? 0xffffff : 0xcccccc;
+					var block = new Block({color: shade});
+					var x = i % 3;
+					var y = Math.floor((i % 9) / 3);
+					var z = Math.floor(i / 9);
+					block.position.set(x - 1, y - 1, z);
+					console.info(i, ':', x, y, z);
+					scene.add(block);
+				}
+			};
+		</script>
+		<script>
+			var world = {
+				angle  : 60,
+				near   : 1,
+				far    : 12,
+				width  : window.innerWidth,
+				height : window.innerHeight
+			}
+
+			var cube, controls;
+
+			var scene, camera, renderer;
+
+			function init() {
+				scene = new THREE.Scene();
+				lights();
+				camera();
+				action();
+			}
+
+			function lights() {
+				var toplight = new THREE.HemisphereLight(0xffffff, 0x666666);
+				scene.add(toplight);
+
+				var lightbulb = new THREE.PointLight(0xffffff, 1, world.far);
+				lightbulb.position.set(world.width/2, world.height/2, world.near);
+				scene.add(lightbulb);
+			}
+
+			function camera() {
+				camera = new THREE.PerspectiveCamera(world.angle, world.width / world.height, world.near, world.far);
+				camera.position.z = world.far/2;
+			}
+
+			function action() {
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize(world.width, world.height);
+				document.body.appendChild(renderer.domElement);
+				setup();
+				loop();
+			}
+
+			function setup() {
+				cube = new Cube();
+				cube.generate(scene);
+
+				controls = new THREE.OrbitControls(camera);
+			}
+
+			function draw() {
+				if (Key.isDown(Key.SPACEBAR)) {
+					if (Key.isDown(Key.SHIFT)) {
+						camera.position.z += 10;
+					}
+					else {
+						camera.position.z -= 10;
+					}
+				}
+				controls.update();
+			}
+
+			function loop() {
+				requestAnimationFrame(loop);
+				draw();
+				renderer.render(scene, camera);
+			}
+
+			init();
+		</script>
+	</body>
+</html>
