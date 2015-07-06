@@ -28,6 +28,10 @@ KeyWatcher.prototype.on = function(action, callback) {
 
 KeyWatcher.prototype.fire = function(action, data) {
 	if (action in this.listeners) {
+		var keyname = Key.Codes[data.which];
+		if (keyname) {
+			data[Key.toVariable(keyname)] = true;
+		}
 		this.listeners[action].forEach(function(callback) {
 			callback(data);
 		});
@@ -98,16 +102,16 @@ Key.Codes = {
 	44 : "Print Screen",
 	45 : "insert",
 	46 : "delete",
-	48 : "0",
-	49 : "1",
-	50 : "2",
-	51 : "3",
-	52 : "4",
-	53 : "5",
-	54 : "6",
-	55 : "7",
-	56 : "8",
-	57 : "9",
+	48 : "num 0",
+	49 : "num 1",
+	50 : "num 2",
+	51 : "num 3",
+	52 : "num 4",
+	53 : "num 5",
+	54 : "num 6",
+	55 : "num 7",
+	56 : "num 8",
+	57 : "num 9",
 	65 : "a",
 	66 : "b",
 	67 : "c",
@@ -195,10 +199,14 @@ Key.Codes = {
 	255 : "toggle touchpad"
 };
 
-for (var code in Key.Codes) {
-	var name = Key.Codes[code];
+Key.toVariable = function(name) {
 	name = name.replace(/[^a-zA-Z0-9]/g, '_');
 	name = name.replace(/_+/g, '_');
 	name = name.toUpperCase();
-	Key[name] = code;
+	return name;
+}
+
+for (var code in Key.Codes) {
+	var name = Key.Codes[code];
+	Key[Key.toVariable(name)] = code;
 }
