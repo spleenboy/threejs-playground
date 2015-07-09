@@ -10,6 +10,7 @@
 		<script src="js/three.min.js"></script>
 		<script src="js/tween.js"></script>
 		<script src="js/key.js"></script>
+		<script src="js/mouse.js"></script>
 		<script>
 			function Block(size) {
 				this.size    = size || 100;
@@ -22,12 +23,12 @@
 			Block.prototype.constructor = Block;
 
 			Block.prototype.init = function() {
-				this.makeCube();
+				this.makeBox();
 				this.makeX();
 				this.makeO();
 			};
 
-			Block.prototype.makeCube = function() {
+			Block.prototype.makeBox = function() {
 				var geometry = new THREE.BoxGeometry(this.size, this.size, this.size);
 				var material = new THREE.MeshLambertMaterial({color: this.bgColor});
 				THREE.Mesh.call(this, geometry, material);
@@ -87,6 +88,11 @@
 
 			Cube.prototype.generate = function(scene) {
 				var count = 27;
+
+				var holder = new THREE.Object3D();
+				holder.position.set(-this.blockSize, -this.blockSize, -this.blockSize);
+				this.add(holder);
+
 				for (var i=0; i<count; i++) {
 					var shade = i % 2 ? 0xffffff : 0xcccccc;
 
@@ -100,11 +106,9 @@
 
 					block.position.set(x, y, z);
 
-					this.add(block);
+					holder.add(block);
+					this.blocks.push(block);
 				}
-
-				this.position.x -= this.blockSize;
-				this.position.y -= this.blockSize;
 
 				scene.add(this);
 			};
@@ -182,14 +186,13 @@
 
 				// Used to force-fit into right angles
 				var index    = Math.round(rotation / radian);
-				var target   = {};
-				target[axis] = index * radian;
+				var target   = index * radian;
 
-				var tween = new TWEEN.Tween(object.rotation);
-				tween.to(target)
+				var tween = new TWEEN.Tween({angle: object.rotation[axis]});
+				tween.to({angle: target})
 					.easing(TWEEN.Easing.Elastic.Out)
 					.onUpdate(function() {
-						object.rotation[axis] = this[axis];
+						object.rotation[axis] = this.angle;
 					})
 					.start();
 			}
@@ -199,9 +202,13 @@
 				if (event.DOWN_ARROW)  turn(cube, 'x', -1);
 				if (event.RIGHT_ARROW) turn(cube, 'y', 1);
 				if (event.LEFT_ARROW)  turn(cube, 'y', -1);
-				if (event.NUM_1)       turn(cube.children[0], 'x', 1);
-				if (event.NUM_2)       turn(cube.children[0], 'y', 1);
-				if (event.NUM_3)       turn(cube.children[0], 'z', 1);
+				if (event.NUM_1)       turn(cube.blocks[0], 'x', 1);
+				if (event.NUM_2)       turn(cube.blocks[0], 'y', 1);
+				if (event.NUM_3)       turn(cube.blocks[0], 'z', 1);
+			});
+
+			Mouse.on('up', function(event) {
+				console.info(event);
 			});
 
 			init();

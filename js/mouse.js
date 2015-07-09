@@ -5,7 +5,6 @@ function MouseWatcher() {
 		'move'       : [],
 		'down'       : [],
 		'up'         : [],
-		'click'      : [],
 		'drag'       : [],
 		'dragging'   : [],
 		'scroll'     : []
