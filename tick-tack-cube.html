@@ -8,15 +8,18 @@
 	</head>
 	<body>
 		<script src="js/three.min.js"></script>
+		<script src="js/three.min.js"></script>
 		<script src="js/tween.js"></script>
 		<script src="js/key.js"></script>
 		<script src="js/mouse.js"></script>
 		<script>
 			function Block(size) {
-				this.size    = size || 100;
-				this.bgColor = 0xcccccc;
-				this.xColor  = 0xcc0000;
-				this.oColor  = 0x0000cc;
+				this.size     = size || 100;
+				this.index    = 0;
+				this.offColor = 0x006666;
+				this.bgColor  = 0xcccccc;
+				this.xColor   = 0xcc0000;
+				this.oColor   = 0x0000cc;
 			};
 
 			Block.prototype = Object.create(THREE.Mesh.prototype);
@@ -30,53 +33,47 @@
 
 			Block.prototype.makeBox = function() {
 				var geometry = new THREE.BoxGeometry(this.size, this.size, this.size);
-				var material = new THREE.MeshLambertMaterial({color: this.bgColor});
+
+				// Shade the top face
+				[4, 5, 6, 7].forEach(function(f) {
+					geometry.faces[f].color.setHex(this.offColor);
+				}, this);
+
+				var material = new THREE.MeshLambertMaterial({
+					color: this.bgColor, 
+					vertexColors: THREE.FaceColors
+				});
 				THREE.Mesh.call(this, geometry, material);
 			};
 
 			Block.prototype.makeX = function() {
+				this.x = new THREE.Object3D();
+
 				var geometry = new THREE.CylinderGeometry(this.size/10, this.size/10, this.size);
 				var material = new THREE.MeshPhongMaterial({color: this.xColor});
 
 				var x1 = new THREE.Mesh(geometry.clone(), material.clone());
 				x1.position.x = this.size/2;
 				x1.rotation.x = -Math.PI/4;
-				this.add(x1);
+				this.x.add(x1);
 
 				var x2 = new THREE.Mesh(geometry.clone(), material.clone());
 				x2.position.x = this.size/2;
 				x2.rotation.x = Math.PI/4;
-				this.add(x2);
+				this.x.add(x2);
+
+				this.add(this.x);
 			};
 
 			Block.prototype.makeO = function() {
 				var geometry = new THREE.TorusGeometry(this.size/3, this.size/10, 8, 50);
 				var material = new THREE.MeshPhongMaterial({color: this.oColor});
 
-				var o = new THREE.Mesh(geometry, material);
-				o.position.z = -this.size/2;
-				this.add(o);
+				this.o = new THREE.Mesh(geometry, material);
+				this.o.position.z = -this.size/2;
+				this.add(this.o);
 			};
 
-			// Sets the outward-facing direction for this cube
-			// x, y, z values should be either 0, 1, 2, or 3, which
-			// is the multiplier for rotation
-			Block.prototype.setFace = function(x, y, z) {
-				var turn = Math.PI/2;
-				this.rotation.set(x*turn, y*turn, z*turn);
-			};
-
-			Block.prototype.turnX = function() {
-
-			};
-
-			Block.prototype.turnO = function() {
-
-			};
-
-			Block.prototype.clear = function() {
-
-			};
 
 			function Cube(blockSize) {
 				this.blockSize = blockSize || 1;
@@ -98,6 +95,7 @@
 
 					var block = new Block(this.blockSize);
 					block.bgColor = shade;
+					block.index   = i;
 					block.init();
 
 					var x = this.blockSize * (i % 3);
@@ -125,10 +123,11 @@
 
 			var cube;
 
-			var scene, camera, renderer;
+			var scene, camera, renderer, raycaster;
 
 			function init() {
-				scene = new THREE.Scene();
+				scene     = new THREE.Scene();
+				raycaster = new THREE.Raycaster();
 				lights();
 				camera();
 				action();
@@ -197,18 +196,42 @@
 					.start();
 			}
 
+			var horizontal = 'y';
+			var vertical   = 'x';
+
 			Key.on('up', function(event) {
-				if (event.UP_ARROW)    turn(cube, 'x', 1);
-				if (event.DOWN_ARROW)  turn(cube, 'x', -1);
-				if (event.RIGHT_ARROW) turn(cube, 'y', 1);
-				if (event.LEFT_ARROW)  turn(cube, 'y', -1);
-				if (event.NUM_1)       turn(cube.blocks[0], 'x', 1);
-				if (event.NUM_2)       turn(cube.blocks[0], 'y', 1);
-				if (event.NUM_3)       turn(cube.blocks[0], 'z', 1);
+				if (event.UP_ARROW) {
+					turn(cube, vertical, 1);
+					horizontal = horizontal === 'y' ? 'z' : 'y';
+				}
+				if (event.DOWN_ARROW) {
+					turn(cube, vertical, -1);
+					horizontal = horizontal === 'y' ? 'z' : 'y';
+				}
+				if (event.RIGHT_ARROW) {
+					turn(cube, horizontal, 1);
+				}
+				if (event.LEFT_ARROW) {
+					turn(cube, horizontal, -1);
+				}
 			});
 
 			Mouse.on('up', function(event) {
-				console.info(event);
+				var mouse = {
+					x: ((event.up.x/world.width) * 2) - 1,
+					y: -((event.up.y/world.height) * 2) + 1
+				};
+
+				raycaster.setFromCamera(mouse, camera);
+
+				var intersected = raycaster.intersectObjects(cube.blocks);
+
+				if (!intersected || !intersected.length) {
+					return;
+				}
+
+				var direction = mouse.x > 0 ? 1 : -1;
+				turn(intersected[0].object, 'y', direction);
 			});
 
 			init();
