@@ -34,7 +34,7 @@
 			Block.prototype.makeBox = function() {
 				var geometry = new THREE.BoxGeometry(this.size, this.size, this.size);
 
-				// Shade the top face
+				// Shade the top and bottom face
 				[4, 5, 6, 7].forEach(function(f) {
 					geometry.faces[f].color.setHex(this.offColor);
 				}, this);
@@ -63,6 +63,7 @@
 				this.x.add(x2);
 
 				this.add(this.x);
+				this.xFace = 1;
 			};
 
 			Block.prototype.makeO = function() {
@@ -71,7 +72,31 @@
 
 				this.o = new THREE.Mesh(geometry, material);
 				this.o.position.z = -this.size/2;
+
 				this.add(this.o);
+				this.oFace = 2;
+			};
+
+			// Determines which face is visible from the origin
+			Block.prototype.showing = function(origin) {
+				if (!origin) {
+					origin = new THREE.Vector3(0, 0, 0);
+				}
+				var target = new THREE.Vector3();
+				target.setFromMatrixPosition(this.matrixWorld).sub(origin).normalize();
+
+				raycaster.set(origin, target);
+				var intersection = raycaster.intersectObject(this, true);
+
+				if (!intersection.length) {
+					return null;
+				}
+
+				var indices = [];
+				intersection.forEach(function(i) {
+					indices.push(i.faceIndex);
+				});
+				return indices;
 			};
 
 
@@ -109,6 +134,50 @@
 				}
 
 				scene.add(this);
+			};
+
+			Cube.prototype.getBlockIndex = function(block) {
+				for (var i=0; i<this.blocks.length; i++) {
+					if (this.blocks[i].id === block.id) {
+						return i;
+					}
+				}
+				return -1;
+			};
+
+			// Returns 2-d array with 4, 9-item arrays that contain the face indexes
+			// for each block on the specified face of this cube.
+			Cube.prototype.grids = function() {
+				var origin = camera.position.clone();
+				var radius = origin.distanceTo(this.position);
+				var angle  = 0;
+
+				var grids  = [];
+				for (var i=0; i<4; i++) {
+					grids.push(this.showing(origin));
+					angle += Math.PI/2;
+					origin.x = radius * Math.cos(angle);
+					origin.z = radius * Math.sin(angle);
+				}
+				return grids;
+			};
+
+			Cube.prototype.showing = function(origin) {
+				if (!origin) {
+					origin = new THREE.Vector3(0, 0, 0);
+				}
+				var blocks = [];
+				this.blocks.forEach(function(block) {
+					var showing = block.showing(origin);
+					if (showing !== null) {
+						blocks.push({
+							object  : block,
+							showing : showing 
+						});
+					}
+				});
+
+				return blocks;
 			};
 		</script>
 		<script>
@@ -232,6 +301,24 @@
 
 				var direction = mouse.x > 0 ? 1 : -1;
 				turn(intersected[0].object, 'y', direction);
+
+				var grids = cube.grids();
+				var table = [];
+				grids.forEach(function(grid, i) {
+					table.push([]);
+					grid.forEach(function(b, y) {
+						table[i][y] = b.showing.join(',');
+					});
+				});
+				console.table(table);
+			});
+
+			window.addEventListener('resize', function() {
+				world.width = window.innerWidth;
+				world.height = window.innerHeight;
+				camera.aspect = world.width / world.height;
+				camera.updateProjectionMatrix();
+				renderer.setSize(world.width, world.height);
 			});
 
 			init();

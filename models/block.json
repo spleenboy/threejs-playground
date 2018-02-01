@@ -1,0 +1,95 @@
+{
+	"metadata": {
+		"version": 4.3,
+		"type": "Object",
+		"generator": "ObjectExporter"
+	},
+	"geometries": [
+		{
+			"uuid": "E3E49A11-2C24-4320-B9E5-FD773A121640",
+			"type": "BoxGeometry",
+			"width": 100,
+			"height": 100,
+			"depth": 100,
+			"widthSegments": 1,
+			"heightSegments": 1,
+			"depthSegments": 1
+		},
+		{
+			"uuid": "A1303A06-0A14-4F17-848E-43415DD56764",
+			"type": "BoxGeometry",
+			"width": 10,
+			"height": 80,
+			"depth": 10,
+			"widthSegments": 1,
+			"heightSegments": 1,
+			"depthSegments": 1
+		},
+		{
+			"uuid": "D2D9571E-B2AA-4AED-B21F-86FB46A5869D",
+			"type": "TorusGeometry",
+			"radius": 30,
+			"tube": 8,
+			"radialSegments": 8,
+			"tubularSegments": 50,
+			"arc": 6.28
+		}],
+	"materials": [
+		{
+			"uuid": "200713F7-45FB-4E5D-8D9F-005FE0D8080A",
+			"type": "MeshPhongMaterial",
+			"color": 16777215,
+			"emissive": 0,
+			"specular": 1118481,
+			"shininess": 30
+		},
+		{
+			"uuid": "08A72A63-C075-4EFB-9BD1-1C027164A58D",
+			"type": "MeshPhongMaterial",
+			"color": 16746871,
+			"emissive": 0,
+			"specular": 1118481,
+			"shininess": 30
+		},
+		{
+			"uuid": "D35C40E2-5801-4C56-B87F-3F3B0DD6303C",
+			"type": "MeshPhongMaterial",
+			"color": 9021951,
+			"emissive": 0,
+			"specular": 1118481,
+			"shininess": 30
+		}],
+	"object": {
+		"uuid": "DFD09E41-4533-417C-969F-A539AC36175D",
+		"type": "Mesh",
+		"name": "Block",
+		"geometry": "E3E49A11-2C24-4320-B9E5-FD773A121640",
+		"material": "200713F7-45FB-4E5D-8D9F-005FE0D8080A",
+		"matrix": [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],
+		"children": [
+			{
+				"uuid": "54D52BAB-5E1F-4BAC-9F18-E22932EEE785",
+				"type": "Mesh",
+				"name": "x2",
+				"geometry": "A1303A06-0A14-4F17-848E-43415DD56764",
+				"material": "08A72A63-C075-4EFB-9BD1-1C027164A58D",
+				"matrix": [1,0,0,0,0,0.6967067122459412,-0.7173560857772827,0,0,0.7173560857772827,0.6967067122459412,0,50.61000061035156,0,0,1]
+			},
+			{
+				"uuid": "78D36694-9B17-4701-966A-6744C45BCC4A",
+				"type": "Mesh",
+				"name": "x1",
+				"geometry": "A1303A06-0A14-4F17-848E-43415DD56764",
+				"material": "08A72A63-C075-4EFB-9BD1-1C027164A58D",
+				"matrix": [1,0,0,0,0,0.6967067122459412,0.7173560857772827,0,0,-0.7173560857772827,0.6967067122459412,0,50.61000061035156,0,0,1]
+			},
+			{
+				"uuid": "DC4E710B-E91A-4C9B-B81E-F9EE9E8A72EC",
+				"type": "Mesh",
+				"name": "Circle",
+				"geometry": "D2D9571E-B2AA-4AED-B21F-86FB46A5869D",
+				"material": "D35C40E2-5801-4C56-B87F-3F3B0DD6303C",
+				"matrix": [0.0007963267271406949,0,-0.9999997019767761,0,0,1,0,0,0.9999997019767761,0,0.0007963267271406949,0,-49,0,0,1]
+			}]
+	}
+}
